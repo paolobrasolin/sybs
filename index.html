@@ -3,5 +3,23 @@ title: Quotations
 layout: default
 ---
 
-{% include quotations %}
+<p>Hi. You can browse the quotations using the this tag cloud.</p>
+
+{% assign quotations = site.EMPTY_STRING %}
+
+{% for set in site.data.quotations.amruta %}
+  {% for quo in set[1] %}
+    {% assign quotations = quotations | push: quo %}
+  {% endfor %}
+{% endfor %}
+
+
+{% assign tags = quotations | map: 'tags' | join: ','  | split: ',' | uniq %}
+
+<div class="tag-cloud">
+{% for tag in tags %}
+<a href="{{site.baseurl}}/tag/{{tag}}">[{{tag}}]</a>
+{% endfor %}
+<a href="{{site.baseurl}}/all">[ALL]</a>
+</div>
 

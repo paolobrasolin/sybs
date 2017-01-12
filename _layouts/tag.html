@@ -1,0 +1,14 @@
+---
+layout: default
+title: Cancer
+---
+
+{% assign tag = page.path | remove: ".html" | remove: "tag/" %}
+
+{% comment %}
+<header>
+  <h1>tag: {{tag}}</h1>
+<header>
+{% endcomment %}
+
+{% include quotations tag=tag %}
