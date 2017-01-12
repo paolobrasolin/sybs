@@ -1,0 +1,48 @@
+
+{% assign quotations = site.EMPTY_STRING %}
+
+{% for set in site.data.quotations.amruta %}
+  {% for quo in set[1] %}
+    {% assign quotations = quotations | push: quo %}
+  {% endfor %}
+{% endfor %}
+
+{% if include.id %}
+  {% assign quotations = quotations | where: "amruta_id", include.id %}
+{% endif %}
+
+{% if include.tag %}
+  {% assign quotations = quotations | where: "tags", include.tag %}
+{% endif %}
+
+{% assign grouped_quotations = quotations | group_by: "amruta_id" %}
+
+{% for group in grouped_quotations %}
+  {% assign amruta_id = group.name | to_integer %}
+  {% assign meta = site.data.quotations.amruta_meta[amruta_id] %}
+
+  <article>
+
+    <header>
+      <h2>{{meta.title}}</h2>
+    </header>
+
+    <main>
+      {% for quotation in group.items %}
+      <blockquote>{{quotation.text | markdownify}}</blockquote>
+      {% endfor %}
+    </main>
+
+    <footer>
+      {{meta.type}},
+      {{meta.place}} in
+      {{meta.city}}
+      ({{meta.country}}),
+      {{meta.date | date: "%-d %B %Y"}}.
+      <a href="https://www.amruta.org/?p={{amruta_id}}">Source</a>
+    </footer>
+
+  </article>
+
+{% endfor %}
+
