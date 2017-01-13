@@ -20,6 +20,7 @@ sass:
 exclude:
   - Gemfile
   - Gemfile.lock
+  - tools/
 
 EMPTY_STRING: []
 
