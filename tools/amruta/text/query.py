@@ -8,6 +8,10 @@ import json
 import html
 import re
 
+from unidecode import unidecode
+
+import lxml.html
+
 import yaml
 
 from tqdm import tqdm
@@ -27,26 +31,28 @@ PARSER.add_argument(
 
 PARSER.add_argument(
     '--offset', type=int, default=1000,
-    help='padding and merging distance for matches (default: 1000)')
+    help='padding and merging distance for matches (default: 1500)')
 
 ARGS = PARSER.parse_args()
 
 #=====================[ MAIN LOOP ]=============================================
 
 with open(ARGS.source, 'r') as input_file:
-    all_posts = json.load(input_file)#[:600]
+    all_posts = json.load(input_file)[800:1000]
 
 def post_contains(post, string):
     return post['content']['rendered'].lower().find(string.lower()) > 0
 
 PATTERN = "(?:(?:(?!{0}).){{0,{1}}}){0}(?:.{{0,{2}}}{0})*(?:(?!{0}).){{0,{1}}}".format(ARGS.query,ARGS.offset,ARGS.offset*2)
 SHERLOCK = re.compile(PATTERN, flags=re.IGNORECASE|re.MULTILINE|re.DOTALL)
+# TAG = re.compile('<[^<]+?>', flags=re.IGNORECASE|re.MULTILINE)
 
 def post_content(post):
-    unescaped = html.unescape(post['content']['rendered'])
-    stripped = re.sub('<[^<]+?>', '', unescaped)
-    # normalised = re.sub('\n', '', stripped)
-    return stripped
+    text = html.unescape(post['content']['rendered'])
+    # text = TAG.sub('', text)
+    text = lxml.html.fromstring(text).text_content()
+    text = re.sub('\s+\n', '\n', text)
+    return text
 
 quotations = []
 
@@ -65,7 +71,7 @@ for post in tqdm(all_posts):
             entry = {
                         'amruta_id': post['id'],
                         'tags': [],
-                        'text': folded_unicode(quotation.strip())
+                        'text': folded_unicode(unidecode(quotation.strip()))
                     }
             quotations.append(entry)
 
@@ -73,5 +79,5 @@ if not os.path.exists('results'):
     os.makedirs('results')
 
 with open("results/{0}.yml".format(ARGS.query), 'w') as yml_file:
-    yaml.dump(quotations, yml_file, default_flow_style=False, allow_unicode=True)
+    yaml.dump(quotations, yml_file, default_flow_style=False)#, allow_unicode=True)
 
